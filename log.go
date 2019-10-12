@@ -39,7 +39,7 @@ type Logging struct {
 	fatal *log.Logger
 	// all 原始输出
 	all *log.Logger
-	Options
+	LogerOptions
 }
 
 // LogLevel 日志级别
@@ -62,50 +62,50 @@ const (
 	LevelNon
 )
 
-// Options 日志选项
-type Options struct {
+// LogerOptions 日志选项
+type LogerOptions struct {
 	logLevel  LogLevel
 	output    io.Writer
 	calldepth int
 }
 
-// Option 日志选项设置方法
-type Option func(*Options)
+// LogerOption 日志选项设置方法
+type LogerOption func(*LogerOptions)
 
 // SetLogLevel 设置日志等级
-func SetLogLevel(lev LogLevel) Option {
-	return func(o *Options) {
+func SetLogLevel(lev LogLevel) LogerOption {
+	return func(o *LogerOptions) {
 		o.logLevel = lev
 	}
 }
 
 // SetOutPut 设置日志输出路径 这个使用默认的输出到标准输入输出即可，后续用 docker 统一采集
-func SetOutPut(out io.Writer) Option {
-	return func(o *Options) {
+func SetOutPut(out io.Writer) LogerOption {
+	return func(o *LogerOptions) {
 		o.output = out
 	}
 }
 
 // SetCallDepth 设置调用深度，以确保打印的日志输出代码所在文件的正确性
-func SetCallDepth(d int) Option {
-	return func(o *Options) {
+func SetCallDepth(d int) LogerOption {
+	return func(o *LogerOptions) {
 		o.calldepth = d
 	}
 }
 
 // SetDefaultLogger 设置默认的日志记录器
-func SetDefaultLogger(opt ...Option) {
+func SetDefaultLogger(opt ...LogerOption) {
 	loger = NewLogger(opt...)
 }
 
 // GetDefaultLogger 获取默认日志记录器
-func GetDefaultLogger(opt ...Option) Loger {
+func GetDefaultLogger() Loger {
 	return loger
 }
 
 // NewLogger 获取日志打印实例
-func NewLogger(opt ...Option) Loger {
-	opts := new(Options)
+func NewLogger(opt ...LogerOption) Loger {
+	opts := new(LogerOptions)
 	for _, o := range opt {
 		o(opts)
 	}
@@ -119,13 +119,13 @@ func NewLogger(opt ...Option) Loger {
 		opts.calldepth = 2
 	}
 	log := Logging{
-		debug:   logFormat(opts.output, "DEBUG: "),
-		info:    logFormat(opts.output, "INFO: "),
-		warning: logFormat(opts.output, "WARNING: "),
-		err:     logFormat(opts.output, "ERROR: "),
-		fatal:   logFormat(opts.output, "FATAL: "),
-		all:     log.New(opts.output, "", 0),
-		Options: *opts,
+		debug:        logFormat(opts.output, "DEBUG: "),
+		info:         logFormat(opts.output, "INFO: "),
+		warning:      logFormat(opts.output, "WARNING: "),
+		err:          logFormat(opts.output, "ERROR: "),
+		fatal:        logFormat(opts.output, "FATAL: "),
+		all:          log.New(opts.output, "", 0),
+		LogerOptions: *opts,
 	}
 	return &log
 }

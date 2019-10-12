@@ -1,0 +1,7 @@
+image:
+  repository: tttlkkkl/deploy
+  tag: latest
+  pullPolicy: Always
+ports:
+  grpc: 0
+  http: 80

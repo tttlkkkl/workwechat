@@ -11,32 +11,73 @@ import (
 
 // WorkWechat 企业微信接口操作对象
 type WorkWechat struct {
-	CorpID     string
-	CorpSecret string
-	Cache      Cache
-	HTTPClient *http.Client
+	Options
+	CorpID         string
+	CorpSecret     string
+	AgentID        int64
+	ReceiveMessage *ReceiveMessage
+	Cache          Cache
+	HTTPClient     *http.Client
+}
+
+// Options 配置选项
+type Options struct {
+	// ReceiveMessageAPI 接收消息服务器配置
+	ReceiveMessageAPI struct {
+		Token          string
+		EncodingAESKey string
+	}
+}
+
+// Option 设置配置选项
+type Option func(*Options)
+
+// SetReceiveMessageAPI 设置消息接收服务器
+func SetReceiveMessageAPI(token, encodingAESKey string) Option {
+	return func(o *Options) {
+		o.ReceiveMessageAPI.Token = token
+		o.ReceiveMessageAPI.EncodingAESKey = encodingAESKey
+	}
 }
 
 // NewWorkWechat 客户端初始化
-func NewWorkWechat(corpID, corpSecret string) *WorkWechat {
-	return &WorkWechat{
-		CorpID:     corpID,
-		CorpSecret: corpSecret,
-		Cache:      NewMemory(),
-		HTTPClient: http.DefaultClient,
+func NewWorkWechat(corpID, corpSecret string, agentID int64, opt ...Option) (*WorkWechat, error) {
+	opts := new(Options)
+	for _, o := range opt {
+		o(opts)
 	}
+	var err error
+	rm := &ReceiveMessage{}
+	if opts.ReceiveMessageAPI.Token != "" && opts.ReceiveMessageAPI.EncodingAESKey != "" {
+		rm, err = newReceiveMessage(opts.ReceiveMessageAPI.Token, opts.ReceiveMessageAPI.EncodingAESKey)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &WorkWechat{
+		Options:        *opts,
+		CorpID:         corpID,
+		CorpSecret:     corpSecret,
+		AgentID:        agentID,
+		ReceiveMessage: rm,
+		Cache:          NewMemory(),
+		HTTPClient:     http.DefaultClient,
+	}, nil
 }
 
 // SendMessage 发送一条自定义结构的消息
-func (w *WorkWechat) SendMessage(message interface{}) (*MessageResponse, error) {
+func (w *WorkWechat) SendMessage(message interface{}) *MessageResponse {
+	repBody := MessageResponse{}
 	accessToken, err := w.GetAccessToken()
 	if err != nil {
 		loger.Error("accessToken 获取失败", err)
-		return nil, err
+		repBody.err = err
+		return &repBody
 	}
 	URL, err := url.Parse(fmt.Sprintf(messageSendURL, accessToken))
 	if err != nil {
-		return nil, err
+		repBody.err = err
+		return &repBody
 	}
 	s, err := json.Marshal(message)
 	if err != nil {
@@ -44,12 +85,12 @@ func (w *WorkWechat) SendMessage(message interface{}) (*MessageResponse, error) 
 	}
 	reqBody := strings.NewReader(string(s))
 	body, err := w.httpPost(URL, reqBody)
-	var repBosy MessageResponse
-	err = json.Unmarshal(body, &repBosy)
+	err = json.Unmarshal(body, &repBody)
 	if err != nil {
-		return nil, err
+		repBody.err = err
+		return &repBody
 	}
-	return &repBosy, nil
+	return &repBody
 }
 func (w *WorkWechat) httpGet(URL *url.URL) ([]byte, error) {
 	rep, err := w.HTTPClient.Get(URL.String())
