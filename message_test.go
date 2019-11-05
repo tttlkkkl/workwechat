@@ -31,7 +31,7 @@ func TestWorkWechat_PushTextMessage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if m := client.PushTextMessage(tt.args.head, tt.args.context, tt.args.isSafe, tt.args.isEnableIDTrans); m.IsSuccess() != tt.success {
+			if m := client.PushTextMessage(&tt.args.head, tt.args.context, tt.args.isSafe, tt.args.isEnableIDTrans); m.IsSuccess() != tt.success {
 				t.Errorf("WorkWechat.PushTextMessage() error = %v, success %v", m.GetError(), tt.success)
 			}
 		})
@@ -85,7 +85,7 @@ func TestWorkWechat_PushTaskCardMessage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if m := client.PushTaskCardMessage(tt.args.head, tt.args.messageBody); m.IsSuccess() != tt.success {
+			if m := client.PushTaskCardMessage(&tt.args.head, tt.args.messageBody); m.IsSuccess() != tt.success {
 				t.Errorf("WorkWechat.PushTaskCardMessage() error = %v, success %v", m.GetError(), tt.success)
 			}
 		})

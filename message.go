@@ -48,9 +48,9 @@ type TextMessage struct {
 }
 
 // PushTextMessage 发送文本消息
-func (w *WorkWechat) PushTextMessage(head MessageHead, context string, isSafe, isEnableIDTrans bool) *MessageResponse {
+func (w *WorkWechat) PushTextMessage(head *MessageHead, context string, isSafe, isEnableIDTrans bool) *MessageResponse {
 	message := TextMessage{
-		MessageHead: head,
+		MessageHead: *head,
 		MessageType: MessageTypeText,
 		Text: struct {
 			Context string `json:"content"`
@@ -108,9 +108,9 @@ func (w *WorkWechat) UpdateTaskCard(t *TaskCardMessageUpdate) *MessageResponse {
 }
 
 // PushTaskCardMessage 推送任务卡片消息
-func (w *WorkWechat) PushTaskCardMessage(head MessageHead, messageBody *TaskCardMessageBody) *MessageResponse {
+func (w *WorkWechat) PushTaskCardMessage(head *MessageHead, messageBody *TaskCardMessageBody) *MessageResponse {
 	message := TaskCardMessage{
-		MessageHead: head,
+		MessageHead: *head,
 		MessageType: MessageTypeTaskCard,
 		TaskCard:    messageBody,
 	}
