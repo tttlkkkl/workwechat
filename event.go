@@ -98,7 +98,14 @@ func (e *ReceiveMessage) Handle(req *http.Request, rep http.ResponseWriter) (*Re
 	if err != nil {
 		return body, err
 	}
-	body.Data = Values(result)
+	xmlMap, ok := result["xml"]
+	if ok {
+		if val, ok := xmlMap.(map[string]interface{}); ok {
+			body.Data = Values(val)
+		}
+	} else {
+		body.Data = Values(result)
+	}
 	return body, nil
 }
 
