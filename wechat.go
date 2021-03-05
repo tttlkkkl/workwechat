@@ -70,7 +70,7 @@ func (w *WorkWechat) SendMessage(message interface{}) *MessageResponse {
 	repBody := MessageResponse{}
 	accessToken, err := w.GetAccessToken()
 	if err != nil {
-		loger.Error("accessToken 获取失败", err)
+		Log.Error("accessToken 获取失败", err)
 		repBody.err = err
 		return &repBody
 	}
@@ -81,7 +81,7 @@ func (w *WorkWechat) SendMessage(message interface{}) *MessageResponse {
 	}
 	s, err := json.Marshal(message)
 	if err != nil {
-		loger.Error("消息序列化失败", err)
+		Log.Error("消息序列化失败", err)
 	}
 	reqBody := strings.NewReader(string(s))
 	body, err := w.httpPost(URL, reqBody)

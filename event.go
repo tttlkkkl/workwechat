@@ -68,7 +68,7 @@ func (e *ReceiveMessage) Handle(req *http.Request, rep http.ResponseWriter) (*Re
 	// url 响应
 	query := req.URL.Query()
 	if req.Method == http.MethodGet {
-		loger.Info("收到消息接收服务器配置请求", req.URL.RequestURI())
+		Log.Info("收到消息接收服务器配置请求", req.URL.RequestURI())
 		echoStr, err := url.PathUnescape(query.Get("echostr"))
 		if err != nil {
 			return body, fmt.Errorf("消息接收服务器响应失败，无法解析的查询：%w", err)
